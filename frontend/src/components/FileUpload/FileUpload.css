@@ -1,0 +1,258 @@
+.file-upload-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.file-upload-container h2 {
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+}
+
+.drop-zone:hover {
+  border-color: #007bff;
+  background-color: #f0f8ff;
+}
+
+.drop-zone.drag-active {
+  border-color: #007bff;
+  background-color: #e6f3ff;
+  transform: scale(1.02);
+}
+
+.drop-zone.error {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.drop-zone-content {
+  position: relative;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.drop-zone p {
+  margin: 8px 0;
+  color: #666;
+}
+
+.or-text {
+  font-style: italic;
+  color: #999;
+}
+
+.browse-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.browse-btn:hover {
+  background-color: #0056b3;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.file-icon {
+  font-size: 32px;
+}
+
+.file-details {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #333;
+}
+
+.file-size {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #dc3545;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.remove-file-btn:hover {
+  background-color: #f8d7da;
+}
+
+.supported-formats {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #666;
+  font-size: 14px;
+}
+
+.supported-formats p {
+  margin: 4px 0;
+}
+
+.description-section {
+  margin-bottom: 24px;
+}
+
+.description-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.description-section textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+  box-sizing: border-box;
+}
+
+.description-section textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.description-section textarea.error {
+  border-color: #dc3545;
+}
+
+.char-counter {
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #666;
+  min-width: 35px;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.upload-error {
+  padding: 12px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.upload-btn {
+  width: 100%;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.upload-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.upload-btn.uploading {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .file-upload-container {
+    padding: 16px;
+    margin: 0 16px;
+  }
+  
+  .drop-zone {
+    padding: 24px 16px;
+  }
+  
+  .file-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+}

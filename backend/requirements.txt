@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-multipart
+aiofiles
+pandas
+numpy
+openpyxl
+python-dotenv
+pydantic-settings
+transformers
+scikit-learn
+matplotlib
+seaborn
+plotly
+google-genai
+bokeh
