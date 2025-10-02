@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     # NOTE: previously this used a literal API key string as the env var name which prevented
     # the application from reading the actual key. Keep your real key in an environment
     # variable or in a .env file (not checked into source control).
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "AIzaSyCei33X6m2mjW1Q2bnJBZ6FGjOe06mHCl4")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     DEFAULT_GEMINI_MODEL: str = "gemini-2.5-flash"
     DEFAULT_TEMPERATURE: float = 0.3
     DEFAULT_MAX_TOKENS: int = 1500
