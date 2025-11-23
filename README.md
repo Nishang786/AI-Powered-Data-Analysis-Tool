@@ -1,4 +1,4 @@
-# Data Science Platform
+# Data Analysis Platform
 
 An end-to-end data science web application combining FastAPI, Google Gemini AI, and Streamlit. Upload datasets, perform automated analysis, apply intelligent preprocessing, and generate AI-assisted visualizations—all through a simple web interface.
 
