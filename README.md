@@ -257,14 +257,3 @@ Content-Type: application/json
 - Reduced attack surface for rendering
 - Consistent correlation heatmap for exploratory data analysis
 
-## 📝 License
-
-[Add your license here]
-
-## 🤝 Contributing
-
-[Add contribution guidelines here]
-
-## 📧 Contact
-
-[Add contact information here]
