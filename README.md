@@ -62,6 +62,7 @@ Interactive API documentation is available at `/docs` when the backend is runnin
 The default storage is local SQLite plus local files under `backend/app/storage`. Keep that directory on a persistent volume to retain uploaded datasets and metadata across container restarts. This setup is intended for local demos and single-instance use; it does not include user authentication or authorization, and should not be exposed publicly or used with sensitive datasets as-is. Use an appropriately secured database, object storage, access controls, and operational monitoring before production deployment.
 
 Do not commit `.env` files, uploaded datasets, generated files, or credentials. The example environment file contains no secrets.
+Removing previously committed files from the current branch does not erase them from Git history. If any historical dataset or credential was sensitive, treat it as exposed and separately rotate credentials or arrange a history purge before public use.
 
 ## Development checks
 
