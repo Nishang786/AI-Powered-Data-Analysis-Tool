@@ -1,259 +1,73 @@
-# Data Analysis Platform
+# AI-Powered Data Analysis Tool
 
-An end-to-end data science web application combining FastAPI, Google Gemini AI, and Streamlit. Upload datasets, perform automated analysis, apply intelligent preprocessing, and generate AI-assisted visualizations—all through a simple web interface.
+A web application for uploading tabular datasets and exploring analysis, preprocessing, and AI-assisted visualization workflows. The backend is built with FastAPI; the frontend is a React application bundled with Vite.
 
-## ✨ Features
+## Features
 
-### 📁 Dataset Upload & Management
-- Support for multiple formats: CSV, XLS/XLSX, JSON, TSV
-- Validation and metadata capture
-- Dataset versioning and tracking
+- Upload CSV, XLS, XLSX, JSON, and TSV datasets (up to 100 MB).
+- Browse uploaded datasets in the web interface.
+- Use the FastAPI endpoints for summaries, preprocessing profiles and transformations, and chart suggestions/rendering.
+- Enable Gemini-backed summaries and suggestions by configuring `GEMINI_API_KEY`.
+- Persist dataset metadata in SQLite and uploaded/processed files on disk.
 
-### 🔍 Automated Analysis
-- **Data sampling**: First 10, last 10, and random 10 rows
-- **Statistical summaries**: Descriptive statistics for numeric and categorical columns
-- **AI-powered insights**: Concise, actionable summaries using Google Gemini
+## Run locally with Docker Compose
 
-### 🛠️ Intelligent Preprocessing
-- Automatic column role inference (numeric, categorical, datetime, text, ID)
-- Missing value profiling with suggested imputations
-- Outlier detection using IQR and z-score methods
-- Smart encoding and scaling recommendations
-- Preview changes in-memory before applying
-- Persist results with versioning or overwrite options
+Requirements: Docker Engine and Docker Compose.
 
-### 📊 AI-Assisted Visualization
-- Minimal JSON specification for chart definitions
-- AI-suggested chart types: histogram, box plot, bar chart, count plot, scatter, line, violin, pie, and heatmap
-- Automatic correlation heatmap generation
-- Server-side sampling for optimal performance on large datasets
-- Base64-encoded images for seamless frontend display
-
-## 🏗️ Tech Stack
-
-- **Backend**: FastAPI, Pydantic, Uvicorn
-- **Data Processing**: Pandas, NumPy, Scikit-learn
-- **Visualization**: Seaborn, Matplotlib
-- **AI**: Google Gemini (via google-genai)
-- **Frontend**: Streamlit
-- **Storage**: Local filesystem
-
-## 📂 Repository Structure
-
-```
-backend/
-  app/
-    core/
-      config.py
-    controllers/
-      upload_controller.py
-      analysis_controller.py
-      preprocessing_controller.py
-      visualization_controller.py
-      llm_controller.py
-    models/
-      dataset_model.py
-      llm_model.py
-    prompts/
-      prompts.py
-    services/
-      dataset_service.py
-      analysis_service.py
-      preprocessing_service.py
-      visualization_service.py
-      llm_service.py
-    storage/
-      uploads/
-      processed/
-    main.py
-  requirements.txt
-  .env
-
-streamlit_app.py
+```bash
+cp .env.example .env
+# Optionally edit .env and set GEMINI_API_KEY.
+docker compose up --build
 ```
 
-## 🚀 Quick Start
+Open the frontend at <http://localhost:5173> and the API documentation at <http://localhost:8000/docs>. The frontend proxies API requests to the backend within the Compose network. AI features remain disabled when `GEMINI_API_KEY` is unset.
 
-### Prerequisites
+## Run without Docker
 
-- Python 3.10+
-- Google Gemini API key ([Get one from AI Studio](https://aistudio.google.com/))
+### Backend
 
-### Backend Setup
-
-1. **Navigate to backend directory and create virtual environment:**
-   ```bash
-   cd backend
-   python -m venv venv
-   
-   # Windows
-   venv\Scripts\activate
-   
-   # macOS/Linux
-   source venv/bin/activate
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configure environment variables:**
-   
-   Create `backend/.env`:
-   ```
-   GEMINI_API_KEY=your_gemini_api_key_here
-   ```
-
-4. **Run the API server:**
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-
-5. **Access API documentation:**
-   - Swagger UI: http://localhost:8000/docs
-   - OpenAPI: http://localhost:8000/openapi.json
-
-### Streamlit Frontend
-
-1. **Install Streamlit dependencies:**
-   ```bash
-   pip install streamlit requests pandas
-   ```
-
-2. **Run the Streamlit app:**
-   ```bash
-   streamlit run streamlit_app.py
-   ```
-
-3. **Configure API connection (optional):**
-   
-   Create `.streamlit/secrets.toml`:
-   ```toml
-   [general]
-   API_BASE = "http://localhost:8000/api"
-   ```
-   
-   Or set the `API_BASE` environment variable, or edit the default in `streamlit_app.py`.
-
-## 🔄 Core Workflows
-
-### 1. Upload Dataset
-- Select a file from your local system
-- Provide a description
-- Server stores the file and metadata in `app/storage/uploads`
-
-### 2. Analyze Data
-- Automatically samples data (head, tail, random rows)
-- Computes descriptive statistics using `describe()`
-- Generates AI-powered summary with Gemini
-
-### 3. Preprocess Data
-- Profiles missing values, unique counts, data types, and outliers
-- Suggests appropriate imputations (mean, median, most frequent, constant)
-- Recommends encodings (one-hot) and scaling methods (standard, minmax)
-- **Preview mode**: Apply transformations in-memory without saving
-- **Persist mode**: Save results with two options:
-  - `versioned`: Creates new file as `{id}_v{n}.ext`
-  - `overwrite`: Replaces the original file
-
-### 4. Generate Visualizations
-- AI suggests optimal chart types based on data characteristics
-- Charts use minimal JSON specification:
-  ```json
-  {
-    "title": "Chart Title",
-    "type": "hist|box|bar|count|scatter|line|violin|pie|heatmap",
-    "x": "column_name",
-    "y": "column_name",
-    "hue": "category_column"
-  }
-  ```
-- Correlation heatmap automatically included
-- Renders as base64 PNG images
-- Slider controls sample size for performance optimization
-
-## 🔌 API Reference
-
-### Upload
-```http
-POST /api/upload/dataset
-Content-Type: multipart/form-data
-
-file: <File>
-description: <string>
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+export GEMINI_API_KEY=your_key  # Optional; Windows PowerShell: $env:GEMINI_API_KEY="your_key"
+uvicorn app.main:app --reload --port 8000
 ```
 
-### List Datasets
-```http
-GET /api/upload/datasets
+### Frontend
+
+In another terminal:
+
+```bash
+cd frontend
+node --version  # Node.js 22 or newer
+npm ci
+npm run dev
 ```
 
-### Analysis
-```http
-POST /api/analysis/{dataset_id}/summary
+The Vite development server proxies `/api` requests to `http://localhost:8000`. Set `VITE_API_BASE` if the API runs at another URL.
+
+## API endpoints
+
+Interactive API documentation is available at `/docs` when the backend is running. Main routes include:
+
+- `POST /api/upload/dataset` and `GET /api/upload/datasets`
+- `POST /api/analysis/{dataset_id}/summary`
+- `POST /api/preprocessing/{dataset_id}/profile` and `/apply`
+- `GET /api/visualization/{dataset_id}/suggest` and `POST /render`
+
+## Storage and deployment notes
+
+The default storage is local SQLite plus local files under `backend/app/storage`. Keep that directory on a persistent volume to retain uploaded datasets and metadata across container restarts. This setup is intended for local demos and single-instance use; it does not include user authentication or authorization, and should not be exposed publicly or used with sensitive datasets as-is. Use an appropriately secured database, object storage, access controls, and operational monitoring before production deployment.
+
+Do not commit `.env` files, uploaded datasets, generated files, or credentials. The example environment file contains no secrets.
+
+## Development checks
+
+```bash
+cd backend && PYTHONPATH=. pytest -q
+cd frontend && npm ci && npm run build
 ```
 
-### Preprocessing Profile
-```http
-POST /api/preprocessing/{dataset_id}/profile
-```
-
-### Apply Preprocessing
-```http
-POST /api/preprocessing/{dataset_id}/apply?persist=false&persist_mode=versioned
-Content-Type: application/json
-
-{
-  "custom_plan": {...}  // Optional
-}
-```
-
-### Visualization Suggestions
-```http
-GET /api/visualization/{dataset_id}/suggest
-```
-
-### Render Charts
-```http
-POST /api/visualization/{dataset_id}/render?points=5000
-Content-Type: application/json
-
-[
-  {
-    "title": "Distribution",
-    "type": "hist",
-    "x": "age",
-    "y": null,
-    "hue": null
-  }
-]
-```
-
-## ⚙️ Environment Variables
-
-### Required
-- `GEMINI_API_KEY`: Your Google Gemini API key for AI features
-
-### Optional (Streamlit)
-- `API_BASE`: Backend API base URL (default: `http://localhost:8000/api`)
-
-## 🎨 Key Design Decisions
-
-### MVC Architecture
-- **Controllers**: Handle API routes and request/response
-- **Services**: Contain business logic for data processing, AI, and visualization
-- **Models**: Define request/response schemas and internal data structures
-- **Prompts**: Centralized prompt engineering for better maintainability
-
-### Safe Preprocessing Pipeline
-- Preview transformations before applying
-- Explicit persistence modes to prevent accidental data loss
-- Version control for processed datasets
-
-### Minimal Visualization Schema
-- Simple, validated chart specifications
-- Easier to extend and maintain
-- Reduced attack surface for rendering
-- Consistent correlation heatmap for exploratory data analysis
-
+GitHub Actions runs the backend tests and frontend production build on pushes and pull requests.

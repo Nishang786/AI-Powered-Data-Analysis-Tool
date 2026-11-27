@@ -1,1 +1,9 @@
-config.py
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+app/storage/uploads/*
+app/storage/processed/*
+app/storage/*.sqlite3*
