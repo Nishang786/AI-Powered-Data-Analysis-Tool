@@ -1,20 +1,102 @@
+import json
+import sqlite3
 import uuid
 from pathlib import Path
-from typing import Dict, List
+from typing import List, Optional
 from fastapi import UploadFile, HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 import aiofiles
 import pandas as pd
-import os
+from contextlib import contextmanager
+from typing import Iterator
 
 from app.core.config import settings
 from app.models.dataset_model import DatasetInfo, DatasetUploadResponse, FileType
 
 class DatasetService:
-    def __init__(self):
-        Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
-        Path(settings.PROCESSED_DIR).mkdir(parents=True, exist_ok=True)
-        self._db: Dict[str, DatasetInfo] = {}
+    def __init__(
+        self,
+        upload_dir: Optional[Path] = None,
+        processed_dir: Optional[Path] = None,
+        database_path: Optional[Path] = None,
+    ):
+        self.upload_dir = Path(upload_dir or settings.UPLOAD_DIR)
+        self.processed_dir = Path(processed_dir or settings.PROCESSED_DIR)
+        self.database_path = Path(database_path or settings.DATASET_DB_PATH)
+        self.upload_dir.mkdir(parents=True, exist_ok=True)
+        self.processed_dir.mkdir(parents=True, exist_ok=True)
+        self.database_path.parent.mkdir(parents=True, exist_ok=True)
+        with self._connection() as connection:
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS datasets (
+                    id TEXT PRIMARY KEY,
+                    filename TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    file_type TEXT NOT NULL,
+                    file_size INTEGER NOT NULL,
+                    upload_date TEXT NOT NULL,
+                    file_path TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    shape_json TEXT,
+                    columns_json TEXT,
+                    data_types_json TEXT
+                )
+                """
+            )
+
+    @contextmanager
+    def _connection(self) -> Iterator[sqlite3.Connection]:
+        connection = sqlite3.connect(self.database_path)
+        connection.row_factory = sqlite3.Row
+        try:
+            yield connection
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def _save_info(self, info: DatasetInfo) -> None:
+        with self._connection() as connection:
+            connection.execute(
+                """
+                INSERT OR REPLACE INTO datasets (
+                    id, filename, description, file_type, file_size, upload_date,
+                    file_path, status, shape_json, columns_json, data_types_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    info.id,
+                    info.filename,
+                    info.description,
+                    info.file_type.value,
+                    info.file_size,
+                    info.upload_date.isoformat(),
+                    info.file_path,
+                    info.status,
+                    json.dumps(info.shape) if info.shape is not None else None,
+                    json.dumps(info.columns) if info.columns is not None else None,
+                    json.dumps(info.data_types) if info.data_types is not None else None,
+                ),
+            )
+
+    @staticmethod
+    def _from_row(row: sqlite3.Row) -> DatasetInfo:
+        return DatasetInfo(
+            id=row["id"],
+            filename=row["filename"],
+            description=row["description"],
+            file_type=FileType(row["file_type"]),
+            file_size=row["file_size"],
+            upload_date=datetime.fromisoformat(row["upload_date"]),
+            file_path=row["file_path"],
+            status=row["status"],
+            shape=json.loads(row["shape_json"]) if row["shape_json"] else None,
+            columns=json.loads(row["columns_json"]) if row["columns_json"] else None,
+            data_types=json.loads(row["data_types_json"]) if row["data_types_json"] else None,
+        )
 
     def _infer_type(self, filename: str) -> FileType:
         ext = filename.lower().split(".")[-1]
@@ -29,7 +111,7 @@ class DatasetService:
 
         dataset_id = str(uuid.uuid4())
         ftype = self._infer_type(file.filename)
-        dest = Path(settings.UPLOAD_DIR) / f"{dataset_id}.{file.filename.split('.')[-1]}"
+        dest = self.upload_dir / f"{dataset_id}.{ftype.value}"
 
         size = 0
         try:
@@ -41,6 +123,9 @@ class DatasetService:
                         raise HTTPException(status_code=413, detail="File too large (>100MB)")
                     await out.write(chunk)
                     chunk = await file.read(1024 * 1024)
+        except Exception:
+            dest.unlink(missing_ok=True)
+            raise
         finally:
             await file.close()
 
@@ -50,11 +135,11 @@ class DatasetService:
             description=description,
             file_type=ftype,
             file_size=size,
-            upload_date=datetime.utcnow(),
+            upload_date=datetime.now(timezone.utc),
             file_path=str(dest),
             status="uploaded",
         )
-        self._db[dataset_id] = info
+        self._save_info(info)
 
         return DatasetUploadResponse(
             id=info.id,
@@ -67,12 +152,20 @@ class DatasetService:
         )
 
     def get_info(self, dataset_id: str) -> DatasetInfo:
-        if dataset_id not in self._db:
+        with self._connection() as connection:
+            row = connection.execute(
+                "SELECT * FROM datasets WHERE id = ?", (dataset_id,)
+            ).fetchone()
+        if row is None:
             raise HTTPException(status_code=404, detail="Dataset not found")
-        return self._db[dataset_id]
+        return self._from_row(row)
 
     def list_all(self) -> List[DatasetInfo]:
-        return list(self._db.values())
+        with self._connection() as connection:
+            rows = connection.execute(
+                "SELECT * FROM datasets ORDER BY upload_date DESC"
+            ).fetchall()
+        return [self._from_row(row) for row in rows]
 
     def load_df(self, dataset_id: str) -> pd.DataFrame:
         info = self.get_info(dataset_id)
@@ -130,8 +223,7 @@ class DatasetService:
             version_path = None
         else:
             # versioned
-            proc_dir = Path("app/storage/processed")
-            base = proc_dir / f"{info.id}"
+            base = self.processed_dir / f"{info.id}"
             # find next version number
             v = 1
             while True:
@@ -140,10 +232,9 @@ class DatasetService:
                     break
                 v += 1
             self._write_df(df, candidate, file_type)
-            # Update dataset record to point to latest version
             info.file_path = str(candidate)
             info.status = "processed"
-            self.datasets_info[info.id] = info
+            self._save_info(info)
             saved_path = info.file_path
             version_path = str(candidate)
 

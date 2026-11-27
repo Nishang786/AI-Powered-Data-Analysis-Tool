@@ -1,8 +1,9 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
-import os
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
+
     PROJECT_NAME: str = "DS Platform (Gemini)"
     VERSION: str = "1.0.0"
     API_PREFIX: str = "/api"
@@ -13,19 +14,17 @@ class Settings(BaseSettings):
     # Storage
     UPLOAD_DIR: str = "app/storage/uploads"
     PROCESSED_DIR: str = "app/storage/processed"
+    DATASET_DB_PATH: str = "app/storage/datasets.sqlite3"
     MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024  # 100 MB
 
     # Gemini - read API key from environment variable named GEMINI_API_KEY or from .env
     # NOTE: previously this used a literal API key string as the env var name which prevented
     # the application from reading the actual key. Keep your real key in an environment
     # variable or in a .env file (not checked into source control).
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY: str = ""
     DEFAULT_GEMINI_MODEL: str = "gemini-2.5-flash"
     DEFAULT_TEMPERATURE: float = 0.3
     DEFAULT_MAX_TOKENS: int = 1500
     DEBUG: bool = False
-
-    class Config:
-        env_file = ".env"
 
 settings = Settings()

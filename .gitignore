@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+dist/
+backend/app/storage/uploads/*
+backend/app/storage/processed/*
+backend/app/storage/*.sqlite3*
+!backend/app/storage/uploads/.gitkeep
+!backend/app/storage/processed/.gitkeep
